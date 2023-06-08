@@ -1,0 +1,96 @@
+<!DOCTYPE HTML><html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ESP Web Server</title>
+  <style>
+    html {font-family: Arial; display: inline-block; text-align: center;}
+    h2 {font-size: 2.3rem;}
+    p {font-size: 1.9rem;}
+    body {max-width: 400px; margin:0px auto; padding-bottom: 25px;}
+    .button {
+      border: none;
+      color: white;
+      padding: 15px 32px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 4px 2px;
+      cursor: pointer;
+    }
+    .button1 {background-color: #4CAF50;} /* Green */
+    .slider { -webkit-appearance: none; 
+        margin: 14px; 
+        width: 360px; 
+        height: 25px; 
+        background: #ffe45c;
+      outline: none; -webkit-transition: .2s; transition: opacity .2s;}
+    .slider::-webkit-slider-thumb {-webkit-appearance: none; appearance: none; width: 35px; height: 35px; background: #003249; cursor: pointer;}
+    .slider::-moz-range-thumb { width: 35px; height: 35px; background: #003249; cursor: pointer; } 
+  </style>
+</head>
+<body>
+  <h2>ESP Web Server</h2>
+  <p><span id="textSliderValue">%SLIDERVALUE%</span></p>
+  <p><input type="range" onchange="updateSliderPWM(this)" id="pwmSlider" min="0" max="255" value="%SLIDERVALUE%" step="1" class="slider"></p>
+  <button onclick="updateButtonAndFetchData(this)" id="button1"  value="%BUTTONVALUE%" class="button button1">ON</button>
+<script>
+function updateButtonAndFetchData(this) {
+    updateButton(this);
+    fetchData();
+  }
+function updateSliderPWM(element) {
+  var sliderValue = document.getElementById("pwmSlider").value;
+  console.log(sliderValue);
+  document.getElementById("textSliderValue").innerHTML = sliderValue;
+  console.log(sliderValue);
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", "/slider?value="+sliderValue, true);
+  xhr.send();
+}
+function updateButton(element) {
+  var button = document.getElementById("button1");
+  var buttonValue = button.value;
+  console.log(buttonValue);
+
+  if (buttonValue === "OFF") {
+    buttonValue = "ON";
+
+  } else {
+    buttonValue = "OFF";
+  }
+
+  button.value = buttonValue;
+  button.innerHTML = buttonValue;
+  console.log(buttonValue);
+
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", "/button1?value="+buttonValue, true);
+  xhr.send();
+}
+function fetchData() {
+      fetch('/button1')
+        .then(response => response.text())
+        .then(data => {
+          // Aufteilung der empfangenen Antwort in Button- und Slider-Wert
+          var values = data.split(",");
+          var buttonValue = values[0];
+          var sliderValue = values[1];
+          console.log(buttonValue);
+          console.log(sliderValue);
+          // Aktualisierung der Elemente auf der Webseite
+          document.getElementById("buttonValue").innerHTML = buttonValue;
+          document.getElementById("sliderValue").innerHTML = sliderValue;
+        })
+        .catch(error => {
+          console.log('Error:', error);
+        });
+    }
+
+    // Aktualisieren der Daten beim Laden der Seite
+    document.addEventListener('DOMContentLoaded', function() {
+      fetchData();
+    });
+</script>
+</body>
+</html>
